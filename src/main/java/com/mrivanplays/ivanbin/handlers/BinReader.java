@@ -20,47 +20,39 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 */
-package com.mrivanplays.ivanbin.handlers.post;
+package com.mrivanplays.ivanbin.handlers;
 
 import com.mrivanplays.ivanbin.BinBootstrap;
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.Writer;
-import org.json.JSONObject;
+import java.io.FileReader;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 
-public class BinCreate implements Route
+public class BinReader implements Route
 {
-
-    private File binsDirectory;
-
-    public BinCreate(File binsDirectory)
-    {
-        this.binsDirectory = binsDirectory;
-    }
 
     @Override
     public Object handle(Request request, Response response) throws Exception
     {
-        String code = request.body();
-        String binString = BinBootstrap.generateRandomString();
-        File file = new File(binsDirectory, binString + ".txt");
-        if (file.exists())
+        String id = request.params(":id");
+        File file = new File(BinBootstrap.binsDirectory, id + ".txt");
+        if (!file.exists())
         {
-            binString = BinBootstrap.generateRandomString();
-            file = new File(binsDirectory, binString + ".txt");
+            response.type("text/html");
+            response.status(404);
+
+            return BinBootstrap.notFoundHTML;
         }
-        file.createNewFile();
-        try (Writer writer = new FileWriter(file))
+        try (BufferedReader reader = new BufferedReader(new FileReader(file)))
         {
-            writer.write(code);
+            response.type("text/html");
+            response.status(200);
+
+            String codeInline = reader.lines().collect(BinBootstrap.newLineCollector);
+
+            return BinBootstrap.readerHTML.replace("{code_here}", codeInline);
         }
-        response.type("application/json");
-        response.status(200);
-        JSONObject object = new JSONObject();
-        object.put("binId", binString);
-        return object;
     }
 }

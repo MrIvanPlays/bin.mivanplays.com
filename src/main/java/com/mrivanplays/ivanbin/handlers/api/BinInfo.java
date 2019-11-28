@@ -20,41 +20,34 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 */
-package com.mrivanplays.ivanbin.handlers.get;
+package com.mrivanplays.ivanbin.handlers.api;
 
 import com.mrivanplays.ivanbin.BinBootstrap;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.util.stream.Collectors;
+import com.mrivanplays.ivanbin.utils.Bin;
+import java.util.Optional;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 
-public class BinReader implements Route
+public class BinInfo implements Route
 {
 
     @Override
     public Object handle(Request request, Response response) throws Exception
     {
+        response.type("application/json");
         String id = request.params(":id");
-        File file = new File(BinBootstrap.binsDirectory, id + ".txt");
-        if (!file.exists())
+        Optional<Bin> binOptional = BinBootstrap.getBin(id);
+        if (binOptional.isPresent())
         {
-            response.type("text/html");
+            response.status(200);
+            return binOptional.get().getData().toString();
+        }
+        else
+        {
             response.status(404);
 
-            return BinBootstrap.inlineHTML(BinBootstrap.notFound);
-        }
-        try (BufferedReader reader = new BufferedReader(new FileReader(file)))
-        {
-            response.type("text/html");
-            response.status(200);
-
-            String htmlInline = BinBootstrap.inlineHTML(BinBootstrap.reader);
-            String codeInline = BinBootstrap.inline(reader.lines().collect(Collectors.toList()));
-
-            return htmlInline.replace("{code_here}", codeInline);
+            return "{\"error:\": \"404 not found\"}";
         }
     }
 }

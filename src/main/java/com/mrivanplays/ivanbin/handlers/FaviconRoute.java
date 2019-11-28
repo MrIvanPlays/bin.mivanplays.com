@@ -20,7 +20,7 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 */
-package com.mrivanplays.ivanbin.handlers.get;
+package com.mrivanplays.ivanbin.handlers;
 
 import java.io.*;
 import spark.Request;
@@ -34,7 +34,7 @@ public class FaviconRoute implements Route
 
     public FaviconRoute()
     {
-        faviconFile = new File("/usr/share/nginx/bin/favicon.ico");
+        faviconFile = new File("/usr/share/nginx/favicon.ico");
     }
 
     @Override

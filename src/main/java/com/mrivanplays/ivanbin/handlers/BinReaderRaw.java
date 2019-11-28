@@ -20,30 +20,38 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 */
-package com.mrivanplays.ivanbin.handlers.get;
+package com.mrivanplays.ivanbin.handlers;
 
 import com.mrivanplays.ivanbin.BinBootstrap;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.util.stream.Collectors;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 
-public class HTMLRenderingRoute implements Route
+public class BinReaderRaw implements Route
 {
-
-    private File file;
-
-    public HTMLRenderingRoute(File file)
-    {
-        this.file = file;
-    }
 
     @Override
     public Object handle(Request request, Response response) throws Exception
     {
-        response.type("text/html");
-        response.status(200);
+        String id = request.params(":id");
+        File file = new File(BinBootstrap.binsDirectory, id + ".txt");
+        if (!file.exists())
+        {
+            response.type("text/html");
+            response.status(404);
 
-        return BinBootstrap.inlineHTML(file);
+            return BinBootstrap.notFoundHTML;
+        }
+        try (BufferedReader reader = new BufferedReader(new FileReader(file)))
+        {
+            response.type("text");
+            response.status(200);
+
+            return reader.lines().collect(BinBootstrap.newLineCollector);
+        }
     }
 }

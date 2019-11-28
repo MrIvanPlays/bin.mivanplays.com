@@ -22,18 +22,24 @@
 */
 package com.mrivanplays.ivanbin;
 
-import com.mrivanplays.ivanbin.handlers.get.BinReader;
-import com.mrivanplays.ivanbin.handlers.get.FaviconRoute;
-import com.mrivanplays.ivanbin.handlers.get.HTMLRenderingRoute;
-import com.mrivanplays.ivanbin.handlers.post.BinCreate;
+import com.mrivanplays.ivanbin.handlers.BinReaderRaw;
+import com.mrivanplays.ivanbin.handlers.api.BinInfo;
+import com.mrivanplays.ivanbin.handlers.BinReader;
+import com.mrivanplays.ivanbin.handlers.FaviconRoute;
+import com.mrivanplays.ivanbin.handlers.api.BinCreate;
+import com.mrivanplays.ivanbin.handlers.api.BinDelete;
+import com.mrivanplays.ivanbin.utils.Bin;
+import com.mrivanplays.ivanbin.utils.NewLineCollector;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Optional;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import org.json.JSONObject;
 import spark.Route;
+import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.initExceptionHandler;
 import static spark.Spark.notFound;
@@ -43,14 +49,33 @@ import static spark.Spark.post;
 public class BinBootstrap
 {
 
-    public static File notFound;
-    public static File reader;
+    public static String notFoundHTML;
+    public static String readerHTML;
     public static File binsDirectory;
+    public static Collector<CharSequence, StringBuilder, String> newLineCollector;
 
     static
     {
-        notFound = new File("/usr/share/nginx/bin/not-found.html");
-        reader = new File("/usr/share/nginx/bin/reader.html");
+        File notFound = new File("/usr/share/nginx/bin/not-found.html");
+        File readerFile = new File("/usr/share/nginx/bin/reader.html");
+        newLineCollector = new NewLineCollector();
+
+        try (BufferedReader notFoundReader = new BufferedReader(new FileReader(notFound)))
+        {
+            notFoundHTML = notFoundReader.lines().collect(Collectors.joining());
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        try (BufferedReader readerFileReader = new BufferedReader(new FileReader(readerFile)))
+        {
+            readerHTML = readerFileReader.lines().collect(Collectors.joining());
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
         binsDirectory = new File("/usr/share/nginx/bin/bins/");
         if (!binsDirectory.exists())
         {
@@ -58,56 +83,69 @@ public class BinBootstrap
         }
     }
 
-    public static void main(String[] args)
+    public static void main(String[] args) throws Exception
     {
         port(6869);
         initExceptionHandler(Throwable::printStackTrace);
 
-        Route notFoundErr = new HTMLRenderingRoute(notFound);
+        Route notFoundErr = htmlRenderingRoute(notFoundHTML);
         notFound(notFoundErr);
 
         Route favicon = new FaviconRoute();
         get("/favicon.ico", favicon);
 
-        Route normalBin = new HTMLRenderingRoute(new File("/usr/share/nginx/bin/default-page.html"));
+        String defaultPageHTMLCache;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(new File("/usr/share/nginx/bin/default-page.html"))))
+        {
+            defaultPageHTMLCache = reader.lines().collect(Collectors.joining());
+        }
+
+        Route normalBin = htmlRenderingRoute(defaultPageHTMLCache);
         get("/", normalBin);
         Route binReader = new BinReader();
         get("/:id", binReader);
+        Route binReaderRaw = new BinReaderRaw();
+        get("/raw/:id", binReaderRaw);
 
-        Route binCreate = new BinCreate(binsDirectory);
-        post("/backend/create", "text", binCreate);
+        // api
+        Route binCreate = new BinCreate();
+        post("/api/create", "text", binCreate);
+        post("/api/create/", "text", binCreate);
+
+        Route binInfo = new BinInfo();
+        get("/api/info/:id", binInfo);
+        get("/api/info/:id/", binInfo);
+
+        Route binDelete = new BinDelete();
+        delete("/api/delete/:id", binDelete);
+        delete("/api/delete/:id/", binDelete);
     }
 
-    public static String inlineHTML(File file) throws IOException
+    public static Optional<Bin> getBin(String id) throws IOException
     {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file)))
+        File binFile = new File(binsDirectory, id + ".txt");
+        if (binFile.exists())
         {
-            return inline(reader.lines().collect(Collectors.toList()));
+            File jsonDataFile = new File(binsDirectory, id + ".json");
+            try (BufferedReader reader = new BufferedReader(new FileReader(jsonDataFile)))
+            {
+                return Optional.of(new Bin(new JSONObject(reader.readLine()), binFile, jsonDataFile));
+            }
+        }
+        else
+        {
+            return Optional.empty();
         }
     }
 
-    public static String inline(List<String> list)
+    private static Route htmlRenderingRoute(String html)
     {
-        StringBuilder bean = new StringBuilder();
-        for (String line : list)
+        return (request, response) ->
         {
-            bean.append(line).append("\n");
-        }
-        return bean.toString();
-    }
-
-    public static String generateRandomString()
-    {
-        int leftLimit = 97; // letter 'a'
-        int rightLimit = 122; // letter 'z'
-        int targetStringLength = 10;
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-        StringBuilder buffer = new StringBuilder(targetStringLength);
-        for (int i = 0; i < targetStringLength; i++)
-        {
-            int randomLimitedInt = leftLimit + (int) (random.nextFloat() * (rightLimit - leftLimit + 1));
-            buffer.append((char) randomLimitedInt);
-        }
-        return buffer.toString();
+            response.type("text/html");
+            response.status(200);
+            return html;
+        };
     }
 }
