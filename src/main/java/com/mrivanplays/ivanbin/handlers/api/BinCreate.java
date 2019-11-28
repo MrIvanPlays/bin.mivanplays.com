@@ -72,6 +72,6 @@ public class BinCreate implements Route
         }
         response.type("application/json");
         response.status(200);
-        return "{\"binId\": " + binString + "}";
+        return "{\"binId\": \"" + binString + "\"}";
     }
 }
