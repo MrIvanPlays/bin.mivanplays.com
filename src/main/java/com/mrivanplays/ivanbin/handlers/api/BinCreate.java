@@ -47,7 +47,13 @@ public class BinCreate implements Route
     @Override
     public Object handle(Request request, Response response) throws Exception
     {
+        response.type("application/json");
         String code = request.body();
+        if (code == null || code.isEmpty())
+        {
+            response.status(403);
+            return "{\"error\": \"403 forbidden (empty/null string for code)\"";
+        }
         String binString = RandomStringGenerator.generate(11);
         File file = new File(binsDirectory, binString + ".txt");
         if (file.exists())
@@ -70,7 +76,6 @@ public class BinCreate implements Route
         {
             writer.write(dataObject.toString());
         }
-        response.type("application/json");
         response.status(200);
         return "{\"binId\": \"" + binString + "\"}";
     }
