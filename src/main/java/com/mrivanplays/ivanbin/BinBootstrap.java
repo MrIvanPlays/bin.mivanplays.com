@@ -27,7 +27,6 @@ import com.mrivanplays.ivanbin.handlers.api.BinInfo;
 import com.mrivanplays.ivanbin.handlers.BinReader;
 import com.mrivanplays.ivanbin.handlers.FaviconRoute;
 import com.mrivanplays.ivanbin.handlers.api.BinCreate;
-import com.mrivanplays.ivanbin.handlers.api.BinDelete;
 import com.mrivanplays.ivanbin.utils.Bin;
 import com.mrivanplays.ivanbin.utils.NewLineCollector;
 import java.io.BufferedReader;
@@ -35,11 +34,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import org.json.JSONObject;
 import spark.Route;
-import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.initExceptionHandler;
 import static spark.Spark.notFound;
@@ -117,9 +118,9 @@ public class BinBootstrap
         get("/api/info/:id", binInfo);
         get("/api/info/:id/", binInfo);
 
-        Route binDelete = new BinDelete();
-        delete("/api/delete/:id", binDelete);
-        delete("/api/delete/:id/", binDelete);
+        BinChecker binChecker = new BinChecker();
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        executor.scheduleAtFixedRate(binChecker, 1, 1, TimeUnit.HOURS);
     }
 
     public static Optional<Bin> getBin(String id) throws IOException

@@ -26,7 +26,6 @@ import com.mrivanplays.ivanbin.BinBootstrap;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.stream.Collectors;
 import spark.Request;
 import spark.Response;
 import spark.Route;
