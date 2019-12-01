@@ -24,9 +24,7 @@ package com.mrivanplays.ivanbin.handlers.api;
 
 import com.mrivanplays.ivanbin.BinBootstrap;
 import com.mrivanplays.ivanbin.utils.RandomStringGenerator;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.Writer;
+import java.io.*;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import org.json.JSONObject;
@@ -53,6 +51,12 @@ public class BinCreate implements Route
         {
             response.status(403);
             return "{\"error\": \"403 forbidden (empty/null string for code)\"";
+        }
+        String existing = checkForExisting(code);
+        if (existing != null)
+        {
+            response.status(200);
+            return "{\"binId\": \"" + existing + "\"}";
         }
         String binString = RandomStringGenerator.generate(11);
         File file = new File(binsDirectory, binString + ".txt");
@@ -81,5 +85,29 @@ public class BinCreate implements Route
         }
         response.status(200);
         return "{\"binId\": \"" + binString + "\"}";
+    }
+
+    private String checkForExisting(String code)
+    {
+        File[] files = BinBootstrap.binsDirectory.listFiles(($, name) -> name.endsWith(".txt"));
+        if (files == null)
+        {
+            return null;
+        }
+        for (File file : files)
+        {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file)))
+            {
+                String readCode = reader.lines().collect(BinBootstrap.newLineCollector);
+                if (code.equals(readCode))
+                {
+                    return file.getName().replace(".txt", "");
+                }
+            }
+            catch (IOException ignored)
+            {
+            }
+        }
+        return null;
     }
 }
