@@ -26,6 +26,8 @@ import com.mrivanplays.ivanbin.BinBootstrap;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.List;
+import java.util.stream.Collectors;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -50,10 +52,19 @@ public class BinReader implements Route
             response.type("text/html");
             response.status(200);
 
-            String codeInline = reader.lines().collect(BinBootstrap.newLineCollector)
+            List<String> lines = reader.lines().collect(Collectors.toList());
+
+            StringBuilder lineNumbers = new StringBuilder();
+
+            for (int i = 0; i < lines.size(); i++)
+            {
+                lineNumbers.append((i + 1)).append(".").append("<br>");
+            }
+
+            String codeInline = lines.stream().collect(BinBootstrap.newLineCollector)
                     .replace("<", "&lt;").replace(">", "&gt;");
 
-            return BinBootstrap.readerHTML.replace("{code_here}", codeInline);
+            return BinBootstrap.readerHTML.replace("{code_here}", codeInline).replace("{lch}", lineNumbers);
         }
     }
 }
