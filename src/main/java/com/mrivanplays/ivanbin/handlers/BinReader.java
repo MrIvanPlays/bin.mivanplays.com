@@ -50,7 +50,8 @@ public class BinReader implements Route
             response.type("text/html");
             response.status(200);
 
-            String codeInline = reader.lines().collect(BinBootstrap.newLineCollector);
+            String codeInline = reader.lines().collect(BinBootstrap.newLineCollector)
+                    .replace("<", "&lt;").replace(">", "&gt;");
 
             return BinBootstrap.readerHTML.replace("{code_here}", codeInline);
         }
