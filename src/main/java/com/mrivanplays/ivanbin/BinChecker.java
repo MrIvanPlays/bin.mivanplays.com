@@ -27,7 +27,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ public class BinChecker implements Runnable
             {
                 JSONObject object = new JSONObject(reader.lines().collect(Collectors.joining()));
                 TemporalAccessor createdAt = DateTimeFormatter.RFC_1123_DATE_TIME.parse(object.getString("createdAt"));
-                Duration duration = Duration.between(LocalDateTime.from(createdAt), LocalDateTime.now());
+                Duration duration = Duration.between(OffsetDateTime.from(createdAt), OffsetDateTime.now());
                 if (duration.toHours() >= 72)
                 {
                     toDelete.add(new SimpleBin(jsonFiles, object.getString("binId")));

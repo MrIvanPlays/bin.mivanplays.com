@@ -67,9 +67,12 @@ public class BinCreate implements Route
             writer.write(code);
         }
         String createdAt = OffsetDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME);
+        String expiresAt = OffsetDateTime.now().plusHours(72).format(DateTimeFormatter.RFC_1123_DATE_TIME);
         JSONObject dataObject = new JSONObject();
         dataObject.put("binId", binString);
         dataObject.put("createdAt", createdAt);
+        dataObject.put("expiresAt", expiresAt);
+        dataObject.put("body", code);
         File jsonData = new File(binsDirectory, binString + ".json");
         jsonData.createNewFile();
         try (Writer writer = new FileWriter(jsonData))
