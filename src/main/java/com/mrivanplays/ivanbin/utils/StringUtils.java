@@ -20,19 +20,41 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 */
-package com.mrivanplays.ivanbin;
+package com.mrivanplays.ivanbin.utils;
 
-import com.mrivanplays.ivanbin.utils.RandomStringGenerator;
-import org.junit.Assert;
-import org.junit.Test;
+import java.util.concurrent.ThreadLocalRandom;
 
-public class RandomStringGeneratorTest
+public class StringUtils
 {
 
-    @Test
-    public void test()
+    private static final String data = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    public static String generateRandomString(int length)
     {
-        System.out.println(RandomStringGenerator.generate(11));
-        Assert.assertFalse(false); // make the test run
+        if (length < 5)
+        {
+            throw new IllegalArgumentException("Length should be at least 5 characters.");
+        }
+
+        StringBuilder builder = new StringBuilder(length);
+        for (int i = 0; i < length; i++)
+        {
+            int randomCharAt = ThreadLocalRandom.current().nextInt(0, data.length());
+            char randomChar = data.charAt(randomCharAt);
+
+            builder.append(randomChar);
+        }
+
+        return builder.toString();
+    }
+
+    public static boolean equals(String one, String two)
+    {
+        return applyReplacements(one).equalsIgnoreCase(applyReplacements(two));
+    }
+
+    private static String applyReplacements(String s)
+    {
+        return s.replace(" ", "").replace("\n", "");
     }
 }

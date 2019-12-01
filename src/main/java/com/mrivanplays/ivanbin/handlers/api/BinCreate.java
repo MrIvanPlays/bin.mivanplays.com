@@ -23,7 +23,7 @@
 package com.mrivanplays.ivanbin.handlers.api;
 
 import com.mrivanplays.ivanbin.BinBootstrap;
-import com.mrivanplays.ivanbin.utils.RandomStringGenerator;
+import com.mrivanplays.ivanbin.utils.StringUtils;
 import java.io.*;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -58,11 +58,11 @@ public class BinCreate implements Route
             response.status(200);
             return "{\"binId\": \"" + existing + "\"}";
         }
-        String binString = RandomStringGenerator.generate(11);
+        String binString = StringUtils.generateRandomString(11);
         File file = new File(binsDirectory, binString + ".txt");
         if (file.exists())
         {
-            binString = RandomStringGenerator.generate(11);
+            binString = StringUtils.generateRandomString(11);
             file = new File(binsDirectory, binString + ".txt");
         }
         file.createNewFile();
@@ -90,7 +90,7 @@ public class BinCreate implements Route
     private String checkForExisting(String code)
     {
         File[] files = BinBootstrap.binsDirectory.listFiles(($, name) -> name.endsWith(".txt"));
-        if (files == null)
+        if (files == null || files.length == 0)
         {
             return null;
         }
@@ -99,7 +99,7 @@ public class BinCreate implements Route
             try (BufferedReader reader = new BufferedReader(new FileReader(file)))
             {
                 String readCode = reader.lines().collect(BinBootstrap.newLineCollector);
-                if (code.equals(readCode))
+                if (StringUtils.equals(code, readCode))
                 {
                     return file.getName().replace(".txt", "");
                 }
