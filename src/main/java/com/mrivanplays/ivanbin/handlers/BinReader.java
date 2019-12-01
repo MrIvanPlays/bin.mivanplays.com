@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.List;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import spark.Request;
 import spark.Response;
@@ -58,13 +59,23 @@ public class BinReader implements Route
 
             for (int i = 0; i < lines.size(); i++)
             {
-                lineNumbers.append((i + 1)).append(".").append("<br>");
+                lineNumbers.append((i + 1)).append("<br>");
             }
 
-            String codeInline = lines.stream().collect(BinBootstrap.newLineCollector)
-                    .replace("<", "&lt;").replace(">", "&gt;");
+            String codeInline = collect(lines).replace("<", "&lt;").replace(">", "&gt;");
 
             return BinBootstrap.readerHTML.replace("{code_here}", codeInline).replace("{lch}", lineNumbers);
         }
+    }
+
+    private String collect(List<String> lines)
+    {
+        Collector<CharSequence, StringBuilder, String> newLineCollector = BinBootstrap.newLineCollector;
+        StringBuilder builder = newLineCollector.supplier().get();
+        for (String line : lines)
+        {
+            newLineCollector.accumulator().accept(builder, line);
+        }
+        return newLineCollector.finisher().apply(builder);
     }
 }
