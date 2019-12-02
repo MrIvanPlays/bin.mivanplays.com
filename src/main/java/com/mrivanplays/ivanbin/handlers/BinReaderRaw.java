@@ -47,12 +47,17 @@ public class BinReaderRaw implements Route
         }
         try (BufferedReader reader = new BufferedReader(new FileReader(file)))
         {
-            response.type("text");
+            response.type("text/html");
             response.status(200);
 
-            return reader.lines().collect(BinBootstrap.newLineCollector)
+            return toHTML(reader.lines().collect(BinBootstrap.newLineCollector)
                     .replace("<", "&lt;")
-                    .replace(">", "&gt;");
+                    .replace(">", "&gt;"));
         }
+    }
+
+    private String toHTML(String code)
+    {
+        return "<html><head></head><body><pre><code>" + code + "</code></pre></body></html>";
     }
 }
