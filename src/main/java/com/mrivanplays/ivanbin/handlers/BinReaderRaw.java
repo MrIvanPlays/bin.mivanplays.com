@@ -50,7 +50,9 @@ public class BinReaderRaw implements Route
             response.type("text");
             response.status(200);
 
-            return reader.lines().collect(BinBootstrap.newLineCollector);
+            return reader.lines().collect(BinBootstrap.newLineCollector)
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;");
         }
     }
 }
