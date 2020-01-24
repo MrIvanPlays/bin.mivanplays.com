@@ -5,8 +5,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -27,16 +27,15 @@ public class BinReader implements Route {
       response.type("text/html");
       response.status(200);
 
-      Stream<String> lineStream = reader.lines();
+      List<String> list = reader.lines().collect(Collectors.toList());
 
       StringBuilder lineNumbers = new StringBuilder();
 
-      for (int i = 0; i < lineStream.count(); i++) {
+      for (int i = 0; i < list.size(); i++) {
         lineNumbers.append((i + 1)).append("<br>");
       }
 
-      String codeInline =
-          lineStream.collect(Collectors.joining("\n")).replace("<", "&lt;").replace(">", "&gt;");
+      String codeInline = String.join("\n", list).replace("<", "&lt;").replace(">", "&gt;");
 
       return BinBootstrap.readerHTML
           .replace("{code_here}", codeInline)

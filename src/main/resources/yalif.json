@@ -1,6 +1,6 @@
 {
     "loggingFormat": "[HH:mm:ss] [%level]: %msg",
-    "fileLogFormat": "[HH:mm:ss] [%loggerName] [%threadName] [%level]",
+    "fileLogFormat": "[HH:mm:ss] [%loggerName] [%threadName] [%level]: %msg",
     "logFileDirectory": "/usr/share/nginx/bin/logs/",
     "timeDateFormat": "HH:mm:ss",
     "disabledLevels": [
