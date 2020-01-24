@@ -14,7 +14,6 @@ public class BinReaderRaw implements Route {
 
   @Override
   public Object handle(Request request, Response response) throws Exception {
-    response.header("Content-Encoding", "UTF-8");
     String id = request.params(":id");
     File file = new File(BinBootstrap.binsDirectory, id + ".txt");
     if (!file.exists()) {
@@ -37,6 +36,8 @@ public class BinReaderRaw implements Route {
   }
 
   private String toHTML(String code) {
-    return "<html><head></head><body><pre><code>" + code + "</code></pre></body></html>";
+    return "<html><head><meta charset=\"utf-8\"/></head><body><pre><code>"
+        + code
+        + "</code></pre></body></html>";
   }
 }

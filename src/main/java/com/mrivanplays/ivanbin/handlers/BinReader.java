@@ -15,7 +15,6 @@ public class BinReader implements Route {
 
   @Override
   public Object handle(Request request, Response response) throws Exception {
-    response.header("Content-Encoding", "UTF-8");
     String id = request.params(":id");
     File file = new File(BinBootstrap.binsDirectory, id + ".txt");
     if (!file.exists()) {
