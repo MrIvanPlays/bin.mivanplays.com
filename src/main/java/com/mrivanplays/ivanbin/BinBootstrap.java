@@ -20,8 +20,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,10 +39,11 @@ public class BinBootstrap {
   public static File binsDirectory;
 
   static {
-    FileSystem fileSystem = FileSystems.getDefault();
-    Path notFound = fileSystem.getPath("not-found.html").toAbsolutePath();
-    Path readerFile = fileSystem.getPath("reader.html").toAbsolutePath();
-    Path authKeyGenerator = fileSystem.getPath("apikey-generator.html").toAbsolutePath();
+    // todo: find a way how to make this with not hardcoded folders
+    // (already know windows way, but linux is stupid)
+    Path notFound = Paths.get("/usr/share/nginx/bin/not-found.html").toAbsolutePath();
+    Path readerFile = Paths.get("/usr/share/nginx/bin/reader.html").toAbsolutePath();
+    Path authKeyGenerator = Paths.get("/usr/share/nginx/bin/apikey-generator.html").toAbsolutePath();
 
     try (BufferedReader notFoundReader =
         Files.newBufferedReader(notFound, StandardCharsets.UTF_8)) {
@@ -67,7 +66,7 @@ public class BinBootstrap {
       e.printStackTrace();
     }
 
-    binsDirectory = new File(fileSystem.getPath("bins/").toAbsolutePath().toString());
+    binsDirectory = new File("/usr/share/nginx/bin/bins/");
     if (!binsDirectory.exists()) {
       binsDirectory.mkdirs();
     }
@@ -88,6 +87,7 @@ public class BinBootstrap {
 
     String defaultPageHTMLCache;
 
+    // todo: see line 42
     Path defaultPagePath = Paths.get("/usr/share/nginx/bin/default-page.html");
 
     try (BufferedReader reader = Files.newBufferedReader(defaultPagePath, StandardCharsets.UTF_8)) {

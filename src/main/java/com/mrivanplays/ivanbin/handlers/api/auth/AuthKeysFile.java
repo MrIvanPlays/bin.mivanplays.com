@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.stream.Collectors;
 import org.hjson.JsonArray;
@@ -18,8 +17,8 @@ public class AuthKeysFile {
   private JsonArray keys;
 
   public AuthKeysFile() {
-    this.file =
-        new File(FileSystems.getDefault().getPath("authkeys.json").toAbsolutePath().toString());
+    // todo: see BinBootstrap:42
+    this.file = new File("/usr/share/nginx/bin/authkeys.json");
     if (!file.exists()) {
       try {
         file.createNewFile();
