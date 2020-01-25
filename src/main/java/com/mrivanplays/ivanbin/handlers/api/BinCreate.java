@@ -11,7 +11,7 @@ import java.nio.file.Files;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
-import org.json.JSONObject;
+import org.hjson.JsonObject;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -50,11 +50,11 @@ public class BinCreate implements Route {
     String createdAt = OffsetDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME);
     String expiresAt =
         OffsetDateTime.now().plusHours(72).format(DateTimeFormatter.RFC_1123_DATE_TIME);
-    JSONObject dataObject = new JSONObject();
-    dataObject.put("binId", binString);
-    dataObject.put("createdAt", createdAt);
-    dataObject.put("expiresAt", expiresAt);
-    dataObject.put("body", code);
+    JsonObject dataObject = new JsonObject();
+    dataObject.add("binId", binString);
+    dataObject.add("createdAt", createdAt);
+    dataObject.add("expiresAt", expiresAt);
+    dataObject.add("body", code);
     File jsonData = new File(binsDirectory, binString + ".json");
     jsonData.createNewFile();
     try (Writer writer = Files.newBufferedWriter(jsonData.toPath(), StandardCharsets.UTF_8)) {

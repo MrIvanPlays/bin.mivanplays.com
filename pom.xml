@@ -53,8 +53,14 @@
     <dependencies>
         <dependency>
             <groupId>com.mrivanplays</groupId>
-            <artifactId>yalifslf4j</artifactId>
-            <version>1.0.2-SNAPSHOT</version>
+            <artifactId>yalifslf4j-base</artifactId>
+            <version>1.0.3-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.mrivanplays</groupId>
+            <artifactId>yalifslf4j-configprovider-hjson</artifactId>
+            <version>1.0.3-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

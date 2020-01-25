@@ -39,7 +39,8 @@ public class BinReader implements Route {
 
       return BinBootstrap.readerHTML
           .replace("{code_here}", codeInline)
-          .replace("{lch}", lineNumbers);
+          .replace("{lch}", lineNumbers)
+          .replace("{baseurl}", BinBootstrap.getBaseUrl());
     }
   }
 }

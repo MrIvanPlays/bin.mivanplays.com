@@ -11,8 +11,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.json.JSONObject;
+import org.hjson.JsonObject;
+import org.hjson.JsonValue;
 
 public class BinChecker implements Runnable {
 
@@ -26,12 +26,12 @@ public class BinChecker implements Runnable {
     for (File jsonFiles : files) {
       try (BufferedReader reader =
           Files.newBufferedReader(jsonFiles.toPath(), StandardCharsets.UTF_8)) {
-        JSONObject object = new JSONObject(reader.lines().collect(Collectors.joining()));
+        JsonObject object = JsonValue.readJSON(reader).asObject();
         TemporalAccessor createdAt =
-            DateTimeFormatter.RFC_1123_DATE_TIME.parse(object.getString("createdAt"));
+            DateTimeFormatter.RFC_1123_DATE_TIME.parse(object.getString("createdAt", null));
         Duration duration = Duration.between(OffsetDateTime.from(createdAt), OffsetDateTime.now());
         if (duration.toHours() >= 72) {
-          toDelete.add(new SimpleBin(jsonFiles, object.getString("binId")));
+          toDelete.add(new SimpleBin(jsonFiles, object.getString("binId", null)));
         }
       } catch (IOException e) {
         e.printStackTrace();

@@ -1,0 +1,5 @@
+{
+  // The base URL of your bin instance
+  // Don't forget the "/" after it or else you will break the program
+  "baseURL": "https://bin.mrivanplays.com/"
+}

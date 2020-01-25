@@ -24,7 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import org.json.JSONObject;
+import org.hjson.JsonValue;
 import spark.Route;
 
 public class BinBootstrap {
@@ -57,7 +57,10 @@ public class BinBootstrap {
     }
   }
 
+  private static Config config;
+
   public static void main(String[] args) throws Exception {
+    config = new Config();
     port(6869);
     initExceptionHandler(Throwable::printStackTrace);
 
@@ -102,18 +105,22 @@ public class BinBootstrap {
       File jsonDataFile = new File(binsDirectory, id + ".json");
       try (BufferedReader reader =
           Files.newBufferedReader(jsonDataFile.toPath(), StandardCharsets.UTF_8)) {
-        return Optional.of(new Bin(new JSONObject(reader.readLine()), binFile, jsonDataFile));
+        return Optional.of(new Bin(JsonValue.readJSON(reader).asObject(), binFile, jsonDataFile));
       }
     } else {
       return Optional.empty();
     }
   }
 
+  public static String getBaseUrl() {
+    return config.getBaseUrl();
+  }
+
   private static Route htmlRenderingRoute(String html) {
     return (request, response) -> {
       response.type("text/html");
       response.status(200);
-      return html;
+      return html.replace("{baseurl}", config.getBaseUrl());
     };
   }
 }

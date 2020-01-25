@@ -77,10 +77,10 @@
         xmlHttp.onreadystatechange = function () {
             if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
                 var json = JSON.parse(xmlHttp.responseText);
-                window.location.href = "https://bin.mrivanplays.com/" + json.binId;
+                window.location.href = "{baseurl}" + json.binId;
             }
         };
-        xmlHttp.open("POST", "https://bin.mrivanplays.com/api/create", true);
+        xmlHttp.open("POST", "{baseurl}api/create", true);
         xmlHttp.setRequestHeader("Content-Type", "text");
         xmlHttp.send(document.getElementById("code").value);
     }
