@@ -1,5 +1,6 @@
 package com.mrivanplays.ivanbin;
 
+import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.initExceptionHandler;
 import static spark.Spark.notFound;
@@ -10,12 +11,17 @@ import com.mrivanplays.ivanbin.handlers.BinReader;
 import com.mrivanplays.ivanbin.handlers.BinReaderRaw;
 import com.mrivanplays.ivanbin.handlers.FaviconRoute;
 import com.mrivanplays.ivanbin.handlers.api.BinCreate;
+import com.mrivanplays.ivanbin.handlers.api.BinDelete;
 import com.mrivanplays.ivanbin.handlers.api.BinInfo;
+import com.mrivanplays.ivanbin.handlers.api.auth.AuthKeyGenerator;
+import com.mrivanplays.ivanbin.handlers.api.auth.AuthKeysFile;
 import com.mrivanplays.ivanbin.utils.Bin;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,11 +37,14 @@ public class BinBootstrap {
 
   public static String notFoundHTML;
   public static String readerHTML;
+  private static String authKeyGeneratorPage;
   public static File binsDirectory;
 
   static {
-    Path notFound = Paths.get("/usr/share/nginx/bin/not-found.html");
-    Path readerFile = Paths.get("/usr/share/nginx/bin/reader.html");
+    FileSystem fileSystem = FileSystems.getDefault();
+    Path notFound = fileSystem.getPath("not-found.html").toAbsolutePath();
+    Path readerFile = fileSystem.getPath("reader.html").toAbsolutePath();
+    Path authKeyGenerator = fileSystem.getPath("apikey-generator.html").toAbsolutePath();
 
     try (BufferedReader notFoundReader =
         Files.newBufferedReader(notFound, StandardCharsets.UTF_8)) {
@@ -51,7 +60,14 @@ public class BinBootstrap {
       e.printStackTrace();
     }
 
-    binsDirectory = new File("/usr/share/nginx/bin/bins/");
+    try (BufferedReader authKeyReader =
+        Files.newBufferedReader(authKeyGenerator, StandardCharsets.UTF_8)) {
+      authKeyGeneratorPage = authKeyReader.lines().collect(Collectors.joining());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    binsDirectory = new File(fileSystem.getPath("bins/").toAbsolutePath().toString());
     if (!binsDirectory.exists()) {
       binsDirectory.mkdirs();
     }
@@ -85,10 +101,22 @@ public class BinBootstrap {
     Route binReaderRaw = new BinReaderRaw();
     get("/raw/:id", binReaderRaw);
 
+    Route apiKeyGenerator = htmlRenderingRoute(authKeyGeneratorPage);
+    get("/generateApiKey/", apiKeyGenerator);
+
     // api
-    Route binCreate = new BinCreate();
+    AuthKeysFile authKeysFile = new AuthKeysFile();
+    Route binCreate = new BinCreate(authKeysFile);
     post("/api/create", "text", binCreate);
     post("/api/create/", "text", binCreate);
+
+    Route binDelete = new BinDelete(authKeysFile);
+    delete("/api/delete/:id", binDelete);
+    delete("/api/delete/:id/", binDelete);
+
+    Route apiKey = new AuthKeyGenerator(authKeysFile);
+    get("/api/getauthkey", apiKey);
+    get("/api/getauthkey/", apiKey);
 
     Route binInfo = new BinInfo();
     get("/api/info/:id", binInfo);

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
@@ -14,16 +15,10 @@ public class Config {
   private JsonObject object;
 
   public Config() throws IOException {
-    File workdir = new File("");
-    File configFile = new File(workdir, "config.hjson");
+    File configFile = new File(FileSystems.getDefault().getPath("config.hjson").toAbsolutePath().toString());
     if (!configFile.exists()) {
-      try {
-        configFile.createNewFile();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
       try (InputStream in = getClass().getClassLoader().getResourceAsStream("config.hjson")) {
-        Files.copy(in, configFile.toPath());
+        Files.copy(in, configFile.getAbsoluteFile().toPath());
       }
     }
     try (Reader reader = Files.newBufferedReader(configFile.toPath(), StandardCharsets.UTF_8)) {

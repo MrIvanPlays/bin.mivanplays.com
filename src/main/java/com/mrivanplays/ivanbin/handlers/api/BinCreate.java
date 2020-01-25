@@ -1,6 +1,7 @@
 package com.mrivanplays.ivanbin.handlers.api;
 
 import com.mrivanplays.ivanbin.BinBootstrap;
+import com.mrivanplays.ivanbin.handlers.api.auth.AuthKeysFile;
 import com.mrivanplays.ivanbin.utils.StringUtils;
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,9 +20,11 @@ import spark.Route;
 public class BinCreate implements Route {
 
   private File binsDirectory;
+  private AuthKeysFile authKeysFile;
 
-  public BinCreate() {
+  public BinCreate(AuthKeysFile authKeysFile) {
     this.binsDirectory = BinBootstrap.binsDirectory;
+    this.authKeysFile = authKeysFile;
   }
 
   @Override
@@ -55,6 +58,19 @@ public class BinCreate implements Route {
     dataObject.add("createdAt", createdAt);
     dataObject.add("expiresAt", expiresAt);
     dataObject.add("body", code);
+    String ip = request.ip();
+    String specifiedAuthKey = request.headers("Auth-Key");
+    if (specifiedAuthKey != null) {
+      String ipAuthKey = authKeysFile.getAuthKey(ip);
+      if (!ipAuthKey.equalsIgnoreCase(specifiedAuthKey)) {
+        dataObject.add("owner", "none");
+      } else {
+        dataObject.add("owner", ipAuthKey);
+      }
+    } else {
+      dataObject.add("owner", "none");
+    }
+
     File jsonData = new File(binsDirectory, binString + ".json");
     jsonData.createNewFile();
     try (Writer writer = Files.newBufferedWriter(jsonData.toPath(), StandardCharsets.UTF_8)) {
